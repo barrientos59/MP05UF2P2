@@ -1,19 +1,148 @@
 package ex2;
 
-public class Enunciat {
+import java.util.ArrayList;
 
+public class Enunciat {
+    private int SIZE = 16;
+    private int ITEMS = 0;
+    private HashEntry[] entries = new HashEntry[SIZE]; // No es necesario importar HashTable aquí
+
+    public int count() {
+        return this.ITEMS;
+    }
+
+    public int size() {
+        return this.SIZE;
+    }
+
+    public void put(String key, String value) {
+        int hash = getHash(key);
+        final HashEntry hashEntry = new HashEntry(key, value);
+
+        if (entries[hash] == null) {
+            entries[hash] = hashEntry;
+        } else {
+            HashEntry temp = entries[hash];
+            while (temp.next != null)
+                temp = temp.next;
+
+            temp.next = hashEntry;
+            hashEntry.prev = temp;
+        }
+        ITEMS++; // Incrementar el contador de elementos después de agregar uno nuevo
+    }
+
+    public String get(String key) {
+        int hash = getHash(key);
+        if (entries[hash] != null) {
+            HashEntry temp = entries[hash];
+
+            while (!temp.key.equals(key))
+                temp = temp.next;
+
+            return temp.value;
+        }
+
+        return null;
+    }
+
+    public void drop(String key) {
+        int hash = getHash(key);
+        if (entries[hash] != null) {
+
+            HashEntry temp = entries[hash];
+            while (!temp.key.equals(key))
+                temp = temp.next;
+
+            if (temp.prev == null) {
+                entries[hash] = null;
+            } else {
+                if (temp.next != null) temp.next.prev = temp.prev;
+                temp.prev.next = temp.next;
+            }
+            ITEMS--; // Decrementar el contador de elementos después de eliminar uno
+        }
+    }
+
+    private int getHash(String key) {
+        return key.hashCode() % SIZE;
+    }
+
+    private class HashEntry {
+        String key;
+        String value;
+
+        HashEntry next;
+        HashEntry prev;
+
+        public HashEntry(String key, String value) {
+            this.key = key;
+            this.value = value;
+            this.next = null;
+            this.prev = null;
+        }
+
+        @Override
+        public String toString() {
+            return "[" + key + ", " + value + "]";
+        }
+    }
+
+    @Override
+    public String toString() {
+        int bucket = 0;
+        StringBuilder hashTableStr = new StringBuilder();
+        for (HashEntry entry : entries) {
+            if (entry == null) {
+                bucket++;
+                continue;
+            }
+
+            hashTableStr.append("\n bucket[")
+                    .append(bucket)
+                    .append("] = ")
+                    .append(entry.toString());
+            bucket++;
+            HashEntry temp = entry.next;
+            while (temp != null) {
+                hashTableStr.append(" -> ");
+                hashTableStr.append(temp.toString());
+                temp = temp.next;
+            }
+        }
+        return hashTableStr.toString();
+    }
+
+    public static void main(String[] args) {
+        Enunciat hashTable = new Enunciat(); // Cambio HashTable por Enunciat
+
+        // Put some key values.
+        for (int i = 0; i < 30; i++) {
+            final String key = String.valueOf(i);
+            hashTable.put(key, key);
+        }
+
+        // Print the HashTable structure
+        log("****   HashTable  ***");
+        log(hashTable.toString());
+        log("\nValue for key(20) : " + hashTable.get("20"));
+    }
+
+    private static void log(String msg) {
+        System.out.println(msg);
+    }
 
 /*
     1. Copia la classe HashTable.java del package "original" a "ex2" i munta-hi un joc de proves per als mètodes "put",
        "get" , "drop" , "count" i "size". Dins els jocs de proves pots fer servir el mètode "toString" que proporciona
        la taula de hash per a obtenir una cadena de text que representa el seu contingut, el mètode "toString" funciona
-       correctament i està lliure d'errors.
+       correctament i està lliure d'errors. ECHO
 
     2. Mira al final d'aquest document, trobaràs un llistat de tot el que cal provar per trobar els errors que té el
        el codi font. Dins un mateix joc de proves, pots fer servir combinacions de mètodes (per exemple "put" i "get").
        El llistat del final indica qué es allò que cal provar, però la forma de fer-ho (molts jocs de proces curts, pocs
        jocs de proves molt llargs, en quin order, etc.) l'has de decidir tu i ha de ser diferent a la que presentin els
-       teus companys.
+       teus companys. ECHO
 
     3. SOLUCIONA els errors que hi trobis al codi font de la taula de hash però NO ESBORRIS CODI, tan sols comenta'l
        perquè es pugui veure el codi antic i el codi nou.
